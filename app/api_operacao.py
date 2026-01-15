@@ -28,7 +28,7 @@ from app.routers import estrutura, alunos, sistema
 
 # Criar aplicação FastAPI
 app = FastAPI(
-    root_path="/api_operacao",
+    root_path="/apiavrede",
     title="API de Operações - Avaliare",
     description="API para importação de alunos e gerenciamento de estrutura organizacional",
     version="2.0.0"
