@@ -1,0 +1,105 @@
+{
+    "taskDefinitionArn": "arn:aws:ecs:us-west-2:895525808331:task-definition/operacao-api-task-def:15",
+    "containerDefinitions": [
+        {
+            "name": "operacao_api",
+            "image": "895525808331.dkr.ecr.us-west-2.amazonaws.com/avaliativa:operacao_api",
+            "cpu": 2048,
+            "memory": 4096,
+            "portMappings": [
+                {
+                    "name": "operacao_api-8000-tcp",
+                    "containerPort": 8000,
+                    "hostPort": 8000,
+                    "protocol": "tcp",
+                    "appProtocol": "http"
+                }
+            ],
+            "essential": true,
+            "environment": [],
+            "environmentFiles": [],
+            "mountPoints": [],
+            "volumesFrom": [],
+            "ulimits": [],
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ecs/operacao-api-task-def",
+                    "mode": "non-blocking",
+                    "awslogs-create-group": "true",
+                    "max-buffer-size": "25m",
+                    "awslogs-region": "us-west-2",
+                    "awslogs-stream-prefix": "ecs"
+                },
+                "secretOptions": []
+            },
+            "healthCheck": {
+            "command": [
+                "CMD-SHELL", 
+                "curl -f -s -S --connect-timeout 3 --max-time 5 http://localhost:8000/apiavrede/avaliare_db_pearson_2025 || exit 1"
+            ],
+            "interval": 30,
+            "timeout": 10,
+            "retries": 3,
+            "startPeriod": 120
+        },
+            "systemControls": []
+        }
+    ],
+    "family": "operacao-api-task-def",
+    "executionRoleArn": "arn:aws:iam::895525808331:role/ecsTaskExecutionRole",
+    "networkMode": "awsvpc",
+    "revision": 15,
+    "volumes": [],
+    "status": "ACTIVE",
+    "requiresAttributes": [
+        {
+            "name": "com.amazonaws.ecs.capability.logging-driver.awslogs"
+        },
+        {
+            "name": "ecs.capability.execution-role-awslogs"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.ecr-auth"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.19"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.28"
+        },
+        {
+            "name": "ecs.capability.container-health-check"
+        },
+        {
+            "name": "ecs.capability.execution-role-ecr-pull"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.18"
+        },
+        {
+            "name": "ecs.capability.task-eni"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.29"
+        }
+    ],
+    "placementConstraints": [],
+    "compatibilities": [
+        "EC2",
+        "FARGATE"
+    ],
+    "requiresCompatibilities": [
+        "FARGATE"
+    ],
+    "cpu": "2048",
+    "memory": "4096",
+    "runtimePlatform": {
+        "cpuArchitecture": "X86_64",
+        "operatingSystemFamily": "LINUX"
+    },
+    "registeredAt": "2025-04-18T02:11:50.046Z",
+    "registeredBy": "arn:aws:sts::895525808331:assumed-role/resizeEC2/resizeEC2",
+    "enableFaultInjection": false,
+    "tags": []
+}
