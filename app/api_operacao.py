@@ -35,61 +35,14 @@ app = FastAPI(
 )
 
 # ========================================
-# MIDDLEWARE: Extração do Nome do Banco
+# MIDDLEWARE: Extração do Nome do Banco (OPCIONAL)
 # ========================================
-@app.middleware("http")
-async def database_selector_middleware(request: Request, call_next):
-    """
-    Middleware para extrair o nome do banco da URL
-    
-    Formato esperado: /api_operacao/{db_name}/endpoint
-    Exemplo: /api_operacao/avaliare_db_pearson_2025/import/completo
-    
-    O nome do banco é armazenado em request.state.db_name
-    """
-    path = request.url.path
-    
-    # Ignorar rotas de sistema (health check, docs, etc)
-    if path in ["/", "/health", "/docs", "/openapi.json", "/redoc"]:
-        response = await call_next(request)
-        return response
-    
-    # Padrão: /api_operacao/{db_name}/...
-    match = re.match(r'^/api_operacao/([^/]+)/(.+)$', path)
-    
-    if match:
-        db_name = match.group(1)
-        remaining_path = match.group(2)
-        new_path = f"/api_operacao/{remaining_path}"
-        
-        print(f"🗄️ DB extraído da URL: {db_name}")
-        print(f"🔄 Path reescrito: {path} → {new_path}")
-        
-        # Reescrever o path
-        request.scope["path"] = new_path
-        request.scope["raw_path"] = new_path.encode()
-        
-        # Armazenar db_name no request state
-        request.state.db_name = db_name
-        
-        response = await call_next(request)
-        return response
-    else:
-        # ❌ ERRO: Nome do banco não especificado na URL
-        print(f"❌ ERRO: Nome do banco não especificado na URL: {path}")
-        return JSONResponse(
-            status_code=400,
-            content={
-                "success": False,
-                "error": "Bad Request",
-                "message": "Nome do banco de dados não especificado na URL",
-                "details": {
-                    "url_recebida": path,
-                    "formato_esperado": "/api_operacao/{db_name}/endpoint",
-                    "exemplo": "/api_operacao/avaliare_db_pearson_2025/import/completo"
-                }
-            }
-        )
+# NOTA: Este middleware foi DESABILITADO para seguir o padrão do código legado
+# Agora as rotas aceitam {db} como parâmetro de path diretamente
+# Formato: /{db}/endpoint (exemplo: /avaliare_db_pearson_2025/import/completo)
+# 
+# O código anterior esperava /api_operacao/{db}/endpoint, mas com root_path="/apiavrede"
+# isso causava conflitos. Agora seguimos o padrão simples /{db}/endpoint
 
 
 # ========================================
