@@ -29,5 +29,5 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /code/app
 
-# NOTA: Usando app.main:app (arquivo refatorado com SOLID)
-CMD ["gunicorn", "--config", "gunicorn_config.py", "app.main:app"]
+# NOTA: Usando app.api_operacao:app (arquivo principal da API)
+CMD ["gunicorn", "--config", "gunicorn_config.py", "app.api_operacao:app"]
