@@ -28,12 +28,14 @@ async def validar_database(db: str):
     
     try:
         with get_db_connection() as connection:
-            with connection.cursor() as cursor:
-                cursor.execute("SHOW DATABASES LIKE %s", (db,))
-                if len(cursor.fetchall()) > 0:
-                    return {"D": "It is working"}
+            cursor = connection.cursor()
+            # Executar USE {db} explicitamente
+            cursor.execute(f"USE {db}")
+            # Se chegou aqui, o banco existe
+            cursor.close()
+            return {"D": "It is working"}
     except Exception as e:
-        print(f"Erro: {str(e)}")
+        print(f"Erro ao validar banco {db}: {str(e)}")
     
     return {"D": "It is NOT working"}
 
