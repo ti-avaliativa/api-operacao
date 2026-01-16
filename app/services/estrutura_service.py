@@ -492,6 +492,10 @@ class EstruturaService:
                         "dados": dados
                     })
 
+            # Commit das transações
+            if hasattr(connection, 'commit'):
+                connection.commit()
+
         all_errors = result["errors"] + import_errors
 
         success_msg = f"✅ Importação concluída: {escolas_criadas} escolas, {series_criadas} séries, {turmas_criadas} turmas criadas"
