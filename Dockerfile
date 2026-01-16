@@ -13,6 +13,7 @@ RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 
 COPY ./app /code/app
 COPY ./gunicorn_config.py /code/app
+COPY ./.env.production /code/.env
 
 ENV PYTHONPATH="/code:${PYTHONPATH}"
 
