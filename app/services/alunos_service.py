@@ -284,8 +284,9 @@ class AlunosService:
             }
 
             # Validar cada linha
-            with get_db_connection(db_name) as connection:
+            with get_db_connection() as connection:
                 cursor = connection.cursor(dictionary=True)
+                cursor.execute(f"USE {db_name}")
 
                 # Verificar se estamos em modo DEMO
                 cursor.execute("SELECT 1")
@@ -690,8 +691,9 @@ class AlunosService:
                 "detalhes": []
             }
 
-            with get_db_connection(db_name) as connection:
+            with get_db_connection() as connection:
                 cursor = connection.cursor(dictionary=True)
+                cursor.execute(f"USE {db_name}")
                 
                 # Verificar se estamos em modo DEMO
                 cursor.execute("SELECT 1")

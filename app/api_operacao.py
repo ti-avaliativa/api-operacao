@@ -2,25 +2,13 @@
 API de Operações - Avaliare
 Arquivo principal da aplicação FastAPI
 """
-import os
-from pathlib import Path
-from dotenv import load_dotenv
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 import re
 
-# Carregar variáveis de ambiente do arquivo .env
-env_path = Path(__file__).parent.parent / '.env'
-if env_path.exists():
-    load_dotenv(env_path)
-    print(f"✅ Arquivo .env carregado: {env_path}")
-else:
-    print(f"⚠️ Arquivo .env não encontrado: {env_path}")
-
 # Importações dos módulos core
 from app.core.config import VALID_API_KEY, EXCLUDED_PATHS, EXCLUDED_PATTERNS
-from app.core.database import initialize_pool, test_connection
 from app.core.security import SecurityMiddleware, mark_app_as_initialized
 
 # Importações dos routers
@@ -111,18 +99,14 @@ async def startup_event():
     """Evento executado quando a aplicação inicia"""
     print("🚀 Iniciando aplicação...")
     try:
-        # Inicializar pool de conexões (SEM banco específico)
-        # IMPORTANTE: Levanta exceção se falhar
-        initialize_pool()
-        print("✅ Pool de conexões inicializado com sucesso")
+        # Pool já está inicializado no import (hardcoded)
+        print("✅ Pool de conexões já inicializado (hardcoded)")
 
         # Marcar como inicializada
         mark_app_as_initialized()
         print("✅ Aplicação totalmente inicializada e pronta para receber requisições")
     except Exception as e:
         print(f"❌ ERRO CRÍTICO na inicialização: {e}")
-        print("❌ Aplicação NÃO pode iniciar sem conexão com banco de dados")
-        print("❌ Verifique as variáveis de ambiente: DB_HOST, DB_USER, DB_PASSWORD")
         raise  # Força a aplicação a falhar na inicialização
 
 

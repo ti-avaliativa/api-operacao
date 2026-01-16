@@ -3,7 +3,7 @@ Router para endpoints de importação de estrutura (Escola, Série, Turma)
 """
 from fastapi import APIRouter, UploadFile, File, Request
 from app.services.estrutura_service import EstruturaService
-from app.core.database import get_db_name_from_request
+
 
 router = APIRouter(prefix="/{db}/import", tags=["Importação de Estrutura"])
 
