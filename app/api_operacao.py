@@ -112,19 +112,18 @@ async def startup_event():
     print("🚀 Iniciando aplicação...")
     try:
         # Inicializar pool de conexões (SEM banco específico)
-        pool_initialized = initialize_pool()
-
-        if pool_initialized:
-            print("✅ Pool de conexões inicializado")
-        else:
-            print("⚠️  Executando em modo DEMO (sem banco)")
+        # IMPORTANTE: Levanta exceção se falhar
+        initialize_pool()
+        print("✅ Pool de conexões inicializado com sucesso")
 
         # Marcar como inicializada
         mark_app_as_initialized()
-        print("✅ Aplicação totalmente inicializada")
+        print("✅ Aplicação totalmente inicializada e pronta para receber requisições")
     except Exception as e:
-        print(f"❌ Erro na inicialização: {e}")
-        print("⚠️  Continuando em modo DEMO")
+        print(f"❌ ERRO CRÍTICO na inicialização: {e}")
+        print("❌ Aplicação NÃO pode iniciar sem conexão com banco de dados")
+        print("❌ Verifique as variáveis de ambiente: DB_HOST, DB_USER, DB_PASSWORD")
+        raise  # Força a aplicação a falhar na inicialização
 
 
 # ========================================

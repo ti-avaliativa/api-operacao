@@ -16,6 +16,9 @@ def initialize_pool():
     Inicializa o pool de conexões SEM banco específico
 
     O banco será selecionado via comando USE {db} em cada query
+    
+    Raises:
+        Exception: Se não conseguir conectar ao banco (aplicação não deve iniciar)
     """
     global pool
 
@@ -31,10 +34,10 @@ def initialize_pool():
         print("📊 Banco será selecionado via USE {db} em cada query")
         return True
     except Exception as e:
-        print(f"❌ Erro ao conectar com MySQL: {e}")
-        print("⚠️  API funcionará em modo DEMO (sem banco de dados)")
+        print(f"❌ ERRO CRÍTICO: Não foi possível conectar ao MySQL: {e}")
+        print(f"❌ Verifique as variáveis de ambiente: DB_HOST, DB_USER, DB_PASSWORD")
         pool = None
-        return False
+        raise Exception(f"Failed to initialize database pool: {e}")
 
 
 
@@ -48,50 +51,18 @@ def get_db_connection(db_name: str = None):
 
     Args:
         db_name: Nome do banco de dados (opcional)
+    
+    Raises:
+        HTTPException: Se o pool não estiver inicializado ou houver erro de conexão
     """
     global pool
 
     if pool is None:
-        # Modo DEMO: simula conexão
-        class MockConnection:
-            def __init__(self):
-                self.autocommit = True
+        raise HTTPException(
+            status_code=503,
+            detail="Database connection pool not initialized. Check database configuration."
+        )
 
-            def cursor(self, dictionary=False):
-                class MockCursor:
-                    def execute(self, query, params=None):
-                        print(f"📋 DEMO - Query: {query[:50]}..." if len(query) > 50 else f"📋 DEMO - Query: {query}")
-                        if params:
-                            print(f"📋 DEMO - Params: {params}")
-                    def fetchone(self):
-                        return None
-                    def fetchall(self):
-                        return []
-                    def close(self):
-                        pass
-                    @property
-                    def lastrowid(self):
-                        return 1
-                return MockCursor()
-
-            def is_connected(self):
-                return True
-
-            def close(self):
-                pass
-
-            def commit(self):
-                print("📋 DEMO - COMMIT")
-                pass
-
-            def rollback(self):
-                print("📋 DEMO - ROLLBACK")
-                pass
-
-        yield MockConnection()
-        return
-
-    # Modo NORMAL: usa pool real
     connection = None
     cursor = None
     try:
@@ -147,18 +118,18 @@ def test_connection():
     """Testa a conexão com o banco de dados"""
     global pool
     try:
-        if pool is not None:
-            with get_db_connection() as connection:
-                cursor = connection.cursor()
-                cursor.execute("SELECT 1")
-                cursor.fetchone()
-                cursor.close()
-            print("✅ Conexão com banco testada com sucesso")
-            return True
-        else:
-            print("⚠️  Executando em modo DEMO (sem banco)")
-            return False
+        if pool is None:
+            raise Exception("Database pool not initialized")
+        
+        with get_db_connection() as connection:
+            cursor = connection.cursor()
+            cursor.execute("SELECT 1")
+            cursor.fetchone()
+            cursor.close()
+        print("✅ Conexão com banco testada com sucesso")
+        return True
     except Exception as e:
         print(f"❌ Erro ao testar conexão: {e}")
+        raise
         return False
 
