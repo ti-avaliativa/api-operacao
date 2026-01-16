@@ -3,7 +3,7 @@ Router para endpoints de importação de alunos (processo multi-step)
 """
 from fastapi import APIRouter, UploadFile, File, Body, Request
 from app.services.alunos_service import AlunosService
-from app.core.database import get_db_name_from_request
+
 from typing import Dict, Any
 
 router = APIRouter(prefix="/{db}/import/alunos", tags=["Importação de Alunos"])

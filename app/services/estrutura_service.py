@@ -67,8 +67,9 @@ class EstruturaService:
         # Lista para detectar nomes similares de escolas
         escolas_processadas = []
 
-        with get_db_connection(db_name) as connection:
+        with get_db_connection() as connection:
             cursor = connection.cursor()
+            cursor.execute(f"USE {db_name}")
             
             for row_data in result["valid_rows"]:
                 linha = row_data["linha_original"]
@@ -375,8 +376,9 @@ class EstruturaService:
         series_cache = {}
 
         # Importação real
-        with get_db_connection(db_name) as connection:
+        with get_db_connection() as connection:
             cursor = connection.cursor()
+            cursor.execute(f"USE {db_name}")
 
             for row_data in result["valid_rows"]:
                 try:
@@ -519,8 +521,9 @@ class EstruturaService:
             db_name: Nome do banco de dados
         """
         try:
-            with get_db_connection(db_name) as connection:
+            with get_db_connection() as connection:
                 cursor = connection.cursor(dictionary=True)
+                cursor.execute(f"USE {db_name}")
 
                 # Lista instituições
                 cursor.execute("SELECT i_id, i_nome FROM instituicoes ORDER BY i_nome LIMIT 10")
