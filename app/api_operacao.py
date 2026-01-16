@@ -2,21 +2,10 @@
 API de Operações - Avaliare
 Arquivo principal da aplicação FastAPI
 """
-import os
-from pathlib import Path
-from dotenv import load_dotenv
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 import re
-
-# Carregar variáveis de ambiente do arquivo .env
-env_path = Path(__file__).parent.parent / '.env'
-if env_path.exists():
-    load_dotenv(env_path)
-    print(f"✅ Arquivo .env carregado: {env_path}")
-else:
-    print(f"⚠️ Arquivo .env não encontrado: {env_path}")
 
 # Importações dos módulos core
 from app.core.config import VALID_API_KEY, EXCLUDED_PATHS, EXCLUDED_PATTERNS
