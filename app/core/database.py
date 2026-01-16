@@ -111,11 +111,19 @@ def get_db_connection(db_name: str = None):
         raise HTTPException(status_code=503, detail="Database connection pool exhausted")
     except Exception as e:
         print(f"Database connection error: {e}")
+        if connection and connection.is_connected():
+            connection.rollback()  # Rollback em caso de erro
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
     finally:
         if cursor:
             cursor.close()
         if connection and connection.is_connected():
+            # Commit antes de fechar a conexão
+            try:
+                connection.commit()
+                print("✅ Transação confirmada (COMMIT)")
+            except Exception as e:
+                print(f"⚠️ Erro ao fazer commit: {e}")
             connection.close()
 
 def get_db_name_from_request(request: Request) -> str:
