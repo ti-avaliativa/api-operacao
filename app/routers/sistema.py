@@ -40,22 +40,23 @@ async def validar_database(db: str):
     return {"D": "It is NOT working"}
 
 
-@router.get("/test")
-async def test_endpoint():
-    """Endpoint de teste para verificar se a API está funcionando"""
+@router.get("/{db}/test")
+async def test_endpoint(db: str):
+    """Endpoint de teste para verificar se a API está funcionando (com banco)"""
     return {
         "success": True,
         "message": "Endpoint de teste funcionando!",
+        "database": db,
         "timestamp": datetime.now().isoformat(),
         "routes_available": [
-            "GET /import/info - Informações sobre importação de estrutura",
-            "POST /import/completo - Importação de estrutura (CSV)",
-            "POST /import/alunos/step1 - Upload e validação de alunos",
-            "POST /import/alunos/step2 - Mapeamento de colunas",
-            "POST /import/alunos/step3 - Detecção de conflitos",
-            "POST /import/alunos/step4 - Resolução de conflitos",
-            "POST /import/alunos/step5 - Importação final",
-            "GET /import/alunos/status - Status da importação"
+            f"GET /{db}/import/info - Informações sobre importação de estrutura",
+            f"POST /{db}/import/completo - Importação de estrutura (CSV)",
+            f"POST /{db}/import/alunos/step1 - Upload e validação de alunos",
+            f"POST /{db}/import/alunos/step2 - Mapeamento de colunas",
+            f"POST /{db}/import/alunos/step3 - Detecção de conflitos",
+            f"POST /{db}/import/alunos/step4 - Resolução de conflitos",
+            f"POST /{db}/import/alunos/step5 - Importação final",
+            f"GET /{db}/import/alunos/status - Status da importação"
         ]
     }
 
