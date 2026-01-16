@@ -5,11 +5,11 @@ from fastapi import APIRouter, UploadFile, File, Request
 from app.services.estrutura_service import EstruturaService
 from app.core.database import get_db_name_from_request
 
-router = APIRouter(prefix="/import", tags=["Importação de Estrutura"])
+router = APIRouter(prefix="/{db}/import", tags=["Importação de Estrutura"])
 
 
 @router.post("/completo")
-async def import_completo(request: Request, file: UploadFile = File(...), dry_run: bool = False):
+async def import_completo(db: str, request: Request, file: UploadFile = File(...), dry_run: bool = False):
     """
     Importa escola, série e turma de uma só vez a partir de arquivo CSV
     Formato esperado: ESCOLA,SERIE,TURMA
@@ -25,8 +25,8 @@ async def import_completo(request: Request, file: UploadFile = File(...), dry_ru
     - dry_run: Se True, apenas valida sem importar (default: False)
     """
     try:
-        # Obter nome do banco do request
-        db_name = get_db_name_from_request(request)
+        # Usar db diretamente do parâmetro de path
+        db_name = db
         print(f"🗄️ Usando banco: {db_name}")
 
         # Lê conteúdo do arquivo
@@ -79,11 +79,11 @@ async def import_completo(request: Request, file: UploadFile = File(...), dry_ru
 
 
 @router.get("/info")
-async def get_import_info(request: Request):
+async def get_import_info(db: str, request: Request):
     """
     Retorna informações sobre dados existentes e formato esperado do CSV
     """
-    # Obter nome do banco do request
-    db_name = get_db_name_from_request(request)
+    # Usar db diretamente do parâmetro de path
+    db_name = db
     return EstruturaService.obter_informacoes_estrutura(db_name)
 

@@ -6,16 +6,16 @@ from app.services.alunos_service import AlunosService
 from app.core.database import get_db_name_from_request
 from typing import Dict, Any
 
-router = APIRouter(prefix="/import/alunos", tags=["Importação de Alunos"])
+router = APIRouter(prefix="/{db}/import/alunos", tags=["Importação de Alunos"])
 
 
 @router.post("/step1")
-async def import_alunos_step1(request: Request, file: UploadFile = File(...)):
+async def import_alunos_step1(db: str, request: Request, file: UploadFile = File(...)):
     """
     Passo 1: Upload e validação inicial do arquivo CSV de alunos
     """
-    # Extrair db_name do request
-    db_name = get_db_name_from_request(request)
+    # Usar db diretamente do parâmetro de path
+    db_name = db
 
     content = await file.read()
 
@@ -47,12 +47,12 @@ async def import_alunos_step1(request: Request, file: UploadFile = File(...)):
 
 
 @router.post("/step2")
-async def import_alunos_step2(request: Request, request_data: Dict[str, Any] = Body(...)):
+async def import_alunos_step2(db: str, request: Request, request_data: Dict[str, Any] = Body(...)):
     """
     Passo 2: Validação do mapeamento de colunas
     """
-    # Extrair db_name do request
-    db_name = get_db_name_from_request(request)
+    # Usar db diretamente do parâmetro de path
+    db_name = db
 
     print(f"🔍 DEBUG ROUTER - Request data recebido: {request_data}")
 
@@ -66,24 +66,24 @@ async def import_alunos_step2(request: Request, request_data: Dict[str, Any] = B
 
 
 @router.post("/step3")
-async def import_alunos_step3(request: Request, request_data: dict = Body(...)):
+async def import_alunos_step3(db: str, request: Request, request_data: dict = Body(...)):
     """
     Passo 3: Validação e detecção de conflitos
     """
-    # Extrair db_name do request
-    db_name = get_db_name_from_request(request)
+    # Usar db diretamente do parâmetro de path
+    db_name = db
 
     session_id = request_data.get("session_id")
     return AlunosService.step3_validar_detectar_conflitos(session_id, db_name)
 
 
 @router.post("/step4")
-async def import_alunos_step4(request: Request, request_data: dict = Body(...)):
+async def import_alunos_step4(db: str, request: Request, request_data: dict = Body(...)):
     """
     Passo 4: Resolução de conflitos
     """
-    # Extrair db_name do request
-    db_name = get_db_name_from_request(request)
+    # Usar db diretamente do parâmetro de path
+    db_name = db
 
     session_id = request_data.get("session_id")
     conflict_resolutions = request_data.get("conflict_resolutions")
@@ -91,19 +91,19 @@ async def import_alunos_step4(request: Request, request_data: dict = Body(...)):
 
 
 @router.post("/step5")
-async def import_alunos_step5(request: Request, request_data: dict = Body(...)):
+async def import_alunos_step5(db: str, request: Request, request_data: dict = Body(...)):
     """
     Passo 5: Importação final
     """
-    # Extrair db_name do request
-    db_name = get_db_name_from_request(request)
+    # Usar db diretamente do parâmetro de path
+    db_name = db
 
     session_id = request_data.get("session_id")
     return AlunosService.step5_importar_final(session_id, db_name)
 
 
 @router.get("/status")
-async def get_import_status(session_id: str):
+async def get_import_status(db: str, session_id: str):
     """
     Obtém o status de uma sessão de importação
     """
