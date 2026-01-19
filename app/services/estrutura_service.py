@@ -180,7 +180,7 @@ class EstruturaService:
                     escolas_csv_mesma_serie_turma = [
                         {"nome": e["nome"]}
                         for e in escolas_processadas
-                        if e.get("serie") == nome_serie and e.get("turma") == nome_turma
+                        if e.get("serie") == nome_serie and e.get("turma") == nome_turma and e["nome"] != nome_escola
                     ]
 
                     # Combinar escolas do banco e do CSV (removendo duplicatas por nome)
@@ -189,39 +189,47 @@ class EstruturaService:
 
                     for escola in escolas_db + escolas_csv_mesma_serie_turma:
                         nome_normalizado = escola["nome"]
-                        if nome_normalizado not in nomes_unicos:
+                        # Não comparar a escola consigo mesma
+                        if nome_normalizado != nome_escola and nome_normalizado not in nomes_unicos:
                             nomes_unicos.add(nome_normalizado)
                             todas_escolas.append(escola)
 
-                    similar_names = detect_similar_names(
-                        nome_escola,
-                        todas_escolas,
-                        threshold=0.7
-                    )
+                    print(f"🔍 Verificando similaridade para '{nome_escola}' (Série: {nome_serie}, Turma: {nome_turma})")
+                    print(f"   Escolas para comparar: {[e['nome'] for e in todas_escolas]}")
 
-                    if similar_names:
-                        # Evitar adicionar duplicatas de similaridade
-                        for similar in similar_names:
-                            # Criar chave única para evitar duplicatas
-                            similar_key = f"{linha}|{nome_escola}|{similar['nome_existente']}|{nome_serie}|{nome_turma}"
+                    if todas_escolas:
+                        similar_names = detect_similar_names(
+                            nome_escola,
+                            todas_escolas,
+                            threshold=0.7
+                        )
 
-                            # Verificar se já foi adicionado
-                            already_added = any(
-                                s["linha"] == linha and
-                                s["nome_atual"] == nome_escola and
-                                s["nome_similar"] == similar["nome_existente"]
-                                for s in similar_schools
-                            )
+                        print(f"   Similaridades encontradas: {len(similar_names)}")
 
-                            if not already_added:
-                                similar_schools.append({
-                                    "linha": linha,
-                                    "nome_atual": nome_escola,
-                                    "nome_similar": similar["nome_existente"],
-                                    "similaridade": similar["similaridade"],
-                                    "id_similar": similar.get("id_existente"),
-                                    "dados": dados
-                                })
+                        if similar_names:
+                            # Evitar adicionar duplicatas de similaridade
+                            for similar in similar_names:
+                                # Criar chave única para evitar duplicatas
+                                similar_key = f"{linha}|{nome_escola}|{similar['nome_existente']}|{nome_serie}|{nome_turma}"
+
+                                # Verificar se já foi adicionado
+                                already_added = any(
+                                    s["linha"] == linha and
+                                    s["nome_atual"] == nome_escola and
+                                    s["nome_similar"] == similar["nome_existente"]
+                                    for s in similar_schools
+                                )
+
+                                if not already_added:
+                                    print(f"   ✅ Adicionando similaridade: {nome_escola} <-> {similar['nome_existente']} ({similar['similaridade']*100:.1f}%)")
+                                    similar_schools.append({
+                                        "linha": linha,
+                                        "nome_atual": nome_escola,
+                                        "nome_similar": similar["nome_existente"],
+                                        "similaridade": similar["similaridade"],
+                                        "id_similar": similar.get("id_existente"),
+                                        "dados": dados
+                                    })
 
                     # Adicionar escola à lista de processadas (com serie e turma)
                     escola_key = f"{nome_escola}|{nome_serie}|{nome_turma}"
@@ -385,10 +393,40 @@ class EstruturaService:
                     linha = row_data["linha_original"]
                     dados = row_data["dados"]
 
+                    # Dados originais para validação
+                    escola_original = str(dados.get("ESCOLA", "")).strip()
+                    serie_original = str(dados.get("SERIE", "")).strip()
+                    turma_original = str(dados.get("TURMA", "")).strip()
+
+                    # Validar caracteres especiais ANTES de normalizar
+                    if escola_original and has_special_characters(escola_original):
+                        import_errors.append({
+                            "linha": linha,
+                            "erro": f"Nome da escola contém caracteres especiais inválidos: '{escola_original}'",
+                            "dados": dados
+                        })
+                        continue
+
+                    if serie_original and has_special_characters(serie_original):
+                        import_errors.append({
+                            "linha": linha,
+                            "erro": f"Nome da série contém caracteres especiais inválidos: '{serie_original}'",
+                            "dados": dados
+                        })
+                        continue
+
+                    if turma_original and has_special_characters(turma_original):
+                        import_errors.append({
+                            "linha": linha,
+                            "erro": f"Nome da turma contém caracteres especiais inválidos: '{turma_original}'",
+                            "dados": dados
+                        })
+                        continue
+
                     # Normaliza dados
-                    nome_escola = normalize_text(dados.get("ESCOLA", ""))
-                    nome_serie = normalize_text(dados.get("SERIE", ""))
-                    nome_turma = normalize_text(dados.get("TURMA", ""))
+                    nome_escola = normalize_text(escola_original)
+                    nome_serie = normalize_text(serie_original)
+                    nome_turma = normalize_text(turma_original)
 
                     if not nome_escola or not nome_serie or not nome_turma:
                         import_errors.append({
