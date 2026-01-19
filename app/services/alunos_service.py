@@ -464,7 +464,8 @@ class AlunosService:
                                         "value": row_data['ra'],
                                         "message": f"Aluno com RA '{row_data['ra']}' já existe no sistema (Nome: {aluno_existente['u_nome']})",
                                         "existing_id": aluno_existente['a_id'],
-                                        "existing_name": aluno_existente['u_nome']
+                                        "existing_name": aluno_existente['u_nome'],
+                                        "data": row_data.copy()  # Incluir dados completos
                                     })
 
                             validation_results["valid_rows"].append({
@@ -476,6 +477,7 @@ class AlunosService:
                             if conflicts:
                                 validation_results["conflicts"].extend([{
                                     "row_index": row_index,
+                                    "data": conflict.get("data", row_data.copy()),  # Garantir que tenha dados
                                     **conflict
                                 } for conflict in conflicts])
 
@@ -498,9 +500,14 @@ class AlunosService:
             session["conflicts"] = validation_results["conflicts"]
             session["step"] = 3
 
+            # Separar alunos válidos (sem conflitos) de alunos com conflitos
+            valid_rows_without_conflicts = [v for v in validation_results["valid_rows"] if not v.get("conflicts")]
+            valid_rows_with_conflicts = [v for v in validation_results["valid_rows"] if v.get("conflicts")]
+
             # Log dos resultados
             print(f"📊 Validação concluída:")
-            print(f"   ✅ Linhas válidas: {len(validation_results['valid_rows'])}")
+            print(f"   ✅ Linhas válidas (sem conflitos): {len(valid_rows_without_conflicts)}")
+            print(f"   ⚠️  Linhas válidas (com conflitos): {len(valid_rows_with_conflicts)}")
             print(f"   ❌ Linhas inválidas: {len(validation_results['invalid_rows'])}")
             print(f"   ⚠️  Conflitos: {len(validation_results['conflicts'])}")
             print(f"   🔄 Duplicatas: {len(validation_results['duplicates'])}")
@@ -519,7 +526,8 @@ class AlunosService:
                 "step": 3,
                 "session_id": session_id,
                 "data": {
-                    "valid_rows": len(validation_results["valid_rows"]),
+                    "valid_rows": len(valid_rows_without_conflicts),  # Apenas alunos SEM conflitos
+                    "valid_rows_with_conflicts": len(valid_rows_with_conflicts),  # Alunos COM conflitos
                     "invalid_rows": len(validation_results["invalid_rows"]),
                     "conflicts_count": len(validation_results["conflicts"]),
                     "duplicates_count": len(validation_results["duplicates"]),
@@ -527,13 +535,16 @@ class AlunosService:
                     "similar_names_count": len(validation_results["similar_names"]),
                     "conflicts": validation_results["conflicts"][:10],
                     "invalid_rows_data": validation_results["invalid_rows"][:20],  # Retornar até 20 linhas inválidas
+                    "valid_rows_data": [v["data"] for v in valid_rows_without_conflicts],  # Apenas alunos SEM conflitos
+                    "valid_rows_with_conflicts_data": [v["data"] for v in valid_rows_with_conflicts],  # Alunos COM conflitos
                     "duplicates": validation_results["duplicates"][:10],  # Retornar até 10 duplicatas
                     "special_chars_errors": validation_results["special_chars_errors"][:10],  # Retornar até 10 erros de caracteres especiais
                     "similar_names": validation_results["similar_names"][:20],  # Retornar até 20 nomes similares
                     "summary": {
                         "total_rows": len(data_rows),
                         "total_linhas": len(data_rows),
-                        "linhas_validas": len(validation_results["valid_rows"]),
+                        "linhas_validas": len(valid_rows_without_conflicts),
+                        "linhas_com_conflitos": len(valid_rows_with_conflicts),
                         "linhas_invalidas": len(validation_results["invalid_rows"]),
                         "conflitos_detectados": len(validation_results["conflicts"]),
                         "duplicatas_detectadas": len(validation_results["duplicates"]),
